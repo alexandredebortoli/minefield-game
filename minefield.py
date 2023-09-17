@@ -94,7 +94,7 @@ class Board:
 def get_valid_input(prompt, min_value, max_value):
     while True:
         try:
-            value = int(input(prompt))
+            value = int(input(prompt)) - 1
             if min_value <= value < max_value:
                 return value
             print("Invalid input: Value is out of bounds.")
@@ -109,8 +109,10 @@ def play(game_board: Board):
         game_board.print_board()
         print("\nSelect a position to reveal...")
 
-        row = get_valid_input("Row: ", 0, game_board.rows)
-        col = get_valid_input("Column: ", 0, game_board.columns)
+        row = get_valid_input(f"Row (1-{game_board.rows}): ", 0, game_board.rows)
+        col = get_valid_input(
+            f"Column (1-{game_board.columns}): ", 0, game_board.columns
+        )
 
         if game_board.is_position_unrevealed(row, col):
             end_game = game_board.reveal_position(row, col)

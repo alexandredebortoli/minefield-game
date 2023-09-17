@@ -1,3 +1,6 @@
+import os
+
+
 class Board:
     def __init__(self, rows, columns, bombs):
         self.rows = rows
@@ -40,8 +43,9 @@ class Board:
                 self.board[pos_row][pos_col] = self.complete_board[pos_row][pos_col]
 
                 if self.board[pos_row][pos_col] == "*":
-                    print("Boom! You lose.")
+                    clear_console()
                     self.print_board()
+                    print("Boom! Game Over.")
                     return True
 
                 if self.board[pos_row][pos_col] == "-":
@@ -70,6 +74,12 @@ class Board:
                 ):
                     return False
 
+        for row in range(self.rows):
+            for col in range(self.columns):
+                if self.board[row][col] == "#":
+                    self.board[row][col] = "*"
+        clear_console()
+        self.print_board()
         print("Victory!")
         return True
 
@@ -78,6 +88,10 @@ class Board:
             for col in row:
                 print(col, end=" ")
             print()
+
+
+def clear_console():
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 def create_game():
@@ -93,13 +107,14 @@ def create_game():
     game_board = Board(rows, cols, bombs)
 
     print("\nBoard successfully created!")
+    input("Press any key to continue...")
     return game_board
 
 
 def play(game_board: Board):
     end_game = False
     while not end_game:
-        print("\n--------------------------------")
+        clear_console()
         game_board.print_board()
         print("\nSelect a position to reveal...")
         col = int(input("Column: "))

@@ -175,6 +175,7 @@ def clear_console():
 
 
 def main():
+    clear_console()
     print("--------------------------------")
     print("-------- Minefield Game --------")
     print("--------------------------------")

@@ -39,7 +39,7 @@ class Board:
                 if self.board[pos_row][pos_col] == "*":
                     clear_console()
                     self.print_board()
-                    print("\nBoom! Game Over.")
+                    print("\033[91m" + "\nBoom! Game Over." + "\033[0m")
                     return True
 
                 if self.board[pos_row][pos_col] == "-":
@@ -75,7 +75,7 @@ class Board:
                     self.board[row][col] = "*"
         clear_console()
         self.print_board()
-        print("\nVictory!")
+        print("\033[92m" + "\nVictory!" + "\033[0m")
         return True
 
     def print_board(self):

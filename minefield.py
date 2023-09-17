@@ -51,7 +51,8 @@ class Board:
                                 0 <= row_displaced < self.rows
                                 and 0 <= col_displaced < self.columns
                             ):
-                                self.reveal_position(row_displaced, col_displaced)
+                                if self.reveal_position(row_displaced, col_displaced):
+                                    return True
         except:
             print("Error: Invalid position.")
 
@@ -83,6 +84,12 @@ class Board:
                 print(col, end=" ")
             print()
 
+    def is_position_unrevealed(self, row, col):
+        if self.board[row][col] == "#":
+            return True
+        else:
+            return False
+
 
 def get_valid_input(prompt, min_value, max_value):
     while True:
@@ -105,7 +112,11 @@ def play(game_board: Board):
         row = get_valid_input("Row: ", 0, game_board.rows)
         col = get_valid_input("Column: ", 0, game_board.columns)
 
-        end_game = game_board.reveal_position(row, col)
+        if game_board.is_position_unrevealed(row, col):
+            end_game = game_board.reveal_position(row, col)
+        else:
+            print("Invalid input: Position already revealed.")
+            input("Press any key to continue...")
 
 
 def validate_bombs(rows, cols, bombs):

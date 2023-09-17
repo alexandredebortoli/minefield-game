@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 class Board:
@@ -12,28 +13,21 @@ class Board:
     def init_complete_board(self):
         complete_board = [["-" for _ in range(self.columns)] for _ in range(self.rows)]
 
-        for pos in self.bombs:
-            row = pos[0]
-            col = pos[1]
+        for row, col in self.bombs:
             complete_board[row][col] = "*"
-
-            for row_displacement in [-1, 0, 1]:
-                for col_displacement in [-1, 0, 1]:
-                    row_displaced = row + row_displacement
-                    col_displaced = col + col_displacement
-
+            for r_offset in [-1, 0, 1]:
+                for c_offset in [-1, 0, 1]:
+                    r = row + r_offset
+                    c = col + c_offset
                     if (
-                        0 <= row_displaced < self.rows
-                        and 0 <= col_displaced < self.columns
+                        0 <= r < self.rows
+                        and 0 <= c < self.columns
+                        and complete_board[r][c] != "*"
                     ):
-                        if complete_board[row_displaced][col_displaced] != "*":
-                            if complete_board[row_displaced][col_displaced] == "-":
-                                complete_board[row_displaced][col_displaced] = "1"
-                            else:
-                                complete_board[row_displaced][col_displaced] = str(
-                                    int(complete_board[row_displaced][col_displaced])
-                                    + 1
-                                )
+                        if complete_board[r][c] == "-":
+                            complete_board[r][c] = "1"
+                        else:
+                            complete_board[r][c] = str(int(complete_board[r][c]) + 1)
 
         return complete_board
 
@@ -45,7 +39,7 @@ class Board:
                 if self.board[pos_row][pos_col] == "*":
                     clear_console()
                     self.print_board()
-                    print("Boom! Game Over.")
+                    print("\nBoom! Game Over.")
                     return True
 
                 if self.board[pos_row][pos_col] == "-":
@@ -80,7 +74,7 @@ class Board:
                     self.board[row][col] = "*"
         clear_console()
         self.print_board()
-        print("Victory!")
+        print("\nVictory!")
         return True
 
     def print_board(self):
@@ -90,25 +84,15 @@ class Board:
             print()
 
 
-def clear_console():
-    os.system("cls" if os.name == "nt" else "clear")
-
-
-def create_game():
-    print("Loading board configuration...\n")
-
-    rows = 5
-    cols = 6
-    bombs = [[1, 2], [0, 1]]
-    num_bombs = len(bombs)
-    print(f"Rows: { rows }")
-    print(f"Cols: { cols }")
-    print(f"Number of bombs: { num_bombs }")
-    game_board = Board(rows, cols, bombs)
-
-    print("\nBoard successfully created!")
-    input("Press any key to continue...")
-    return game_board
+def get_valid_input(prompt, min_value, max_value):
+    while True:
+        try:
+            value = int(input(prompt))
+            if min_value <= value < max_value:
+                return value
+            print("Invalid input: Value is out of bounds.")
+        except ValueError:
+            print("Invalid input: Please enter a valid integer.")
 
 
 def play(game_board: Board):
@@ -117,9 +101,64 @@ def play(game_board: Board):
         clear_console()
         game_board.print_board()
         print("\nSelect a position to reveal...")
-        col = int(input("Column: "))
-        row = int(input("Row: "))
-        end_game = game_board.reveal_position(row - 1, col - 1)
+
+        row = get_valid_input("Row: ", 0, game_board.rows)
+        col = get_valid_input("Column: ", 0, game_board.columns)
+
+        end_game = game_board.reveal_position(row, col)
+
+
+def validate_bombs(rows, cols, bombs):
+    for bomb in bombs:
+        if not all(isinstance(x, int) for x in bomb):
+            raise ValueError("\nInvalid bomb position: Non-integer value found.")
+        if not (0 <= bomb[0] < rows) or not (0 <= bomb[1] < cols):
+            raise ValueError("\nInvalid bomb position: Out of bounds.")
+
+
+def read_game_configuration_from_file(filename):
+    try:
+        with open(filename, "r") as file:
+            rows = int(file.readline().strip())
+            cols = int(file.readline().strip())
+            bombs_str = file.readline().strip()
+            bombs = [list(map(int, bomb.split(","))) for bomb in bombs_str.split(";")]
+            return rows, cols, bombs
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found.")
+        sys.exit(1)
+    except (ValueError, IndexError):
+        print(f"Error: Invalid format in file '{filename}'.")
+        sys.exit(1)
+
+
+def create_game():
+    print("Enter the filename containing the game configuration:")
+
+    filename = input("Filename: ")
+
+    rows, cols, bombs = read_game_configuration_from_file(filename)
+
+    print("\nGame configuration loaded successfully:\n")
+    print(f"Rows: {rows}")
+    print(f"Cols: {cols}")
+    print(f"Number of bombs: {len(bombs)}")
+
+    try:
+        validate_bombs(rows, cols, bombs)
+    except ValueError as error:
+        print(error)
+        sys.exit(1)
+
+    game_board = Board(rows, cols, bombs)
+
+    print("\nGame created!")
+    input("Press any key to continue...")
+    return game_board
+
+
+def clear_console():
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 def main():
